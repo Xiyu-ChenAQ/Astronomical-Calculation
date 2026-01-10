@@ -17,4 +17,4 @@ sim.dt = 0.01             # 时间步长
 sim.integrate(100)
   # 输出结果
 for i, p in enumerate(sim.particles):
-      print(f"粒子 {i}: 位置 = ({p.x:.3f}, {p.y:.3f}, {p.z'mz:.3f})")
+      print(f"粒子 {i}: 位置 = ({p.x:.3f}, {p.y:.3f}, {p.zmz:.3f})")
