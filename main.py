@@ -1,20 +1,37 @@
 import rebound
-import numpy as np
-import astropy.units as u
-from astroquery.simbad import Simbad
+
 sim = rebound.Simulation()
-sim.units='AU'
+sim.units = ('yr', 'AU', 'Msun')
+sim.integrator = "whfast"
+sim.dt = 0.01
 
-sim.add(m=1.)           # 太阳
-sim.add(m=3.003e-6, a=1., e=0.0167)  # 地球
-sim.add(m=9.543e-4, a=5.203, e=0.048)  # 木星
+sim.add(m=1.0)  # Sun
 
-  # 设置积分器
-sim.integrator = "whfast"  # 快速且精确
-sim.dt = 0.01             # 时间步长
+planets = [
+    ("Mercury", 1.6601e-7, 0.3871, 0.2056),
+    ("Venus",   2.4478e-6, 0.7233, 0.0068),
+    ("Earth",   3.0035e-6, 1.0000, 0.0167),
+    ("Mars",    3.2271e-7, 1.5237, 0.0934),
+    ("Jupiter", 9.5458e-4, 5.2028, 0.0489),
+    ("Saturn",  2.8589e-4, 9.5388, 0.0565),
+    ("Uranus",  4.3662e-5, 19.191, 0.0472),
+    ("Neptune", 5.1514e-5, 30.068, 0.0086),
+]
 
-  # 积分100个时间单位
-sim.integrate(100)
-  # 输出结果
-for i, p in enumerate(sim.particles):
-      print(f"粒子 {i}: 位置 = ({p.x:.3f}, {p.y:.3f}, {p.zmz:.3f})")
+for name, m, a, e in planets:
+    sim.add(m=m, a=a, e=e)
+
+sim.move_to_com()
+
+import numpy as np
+
+sun = sim.particles[0]
+earth = sim.particles[3]
+
+r = np.linalg.norm([
+    earth.x - sun.x,
+    earth.y - sun.y,
+    earth.z - sun.z
+])
+
+print(r, "AU")
