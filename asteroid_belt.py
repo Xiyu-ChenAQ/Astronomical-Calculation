@@ -40,42 +40,85 @@ def add_main_belt(sim, N=20000, primary=None, rng=None):
 # Generate a dynamically evolved main asteroid belt
 # with Kirkwood gaps already cleared by Jupiter resonances
 def add_hilda_group(sim, N=3000, jupiter=None, rng=None):
+    """
+    添加希尔达群小行星（与木星 3:2 共振）
+
+    Parameters:
+    -----------
+    sim : rebound.Simulation
+        REBOUND 模拟对象
+    N : int
+        小行星数量
+    jupiter : rebound.Particle
+        木星粒子对象
+    rng : numpy.random.Generator
+        随机数生成器
+    """
     if rng is None:
         rng = np.random.default_rng()
+
+    # 三个拉格朗日中心（0°, 120°, 240°）
     centers = [0, 2 * np.pi / 3, 4 * np.pi / 3]
+
     for _ in range(N):
-        a=rng.normal(3.97,0.05)
-        e=rng.uniform(0.1, 0.31)
+        # 3:2 共振半长轴 ~3.97 AU
+        a = rng.normal(3.97, 0.05)
+        e = rng.uniform(0.1, 0.3)
         inc = rng.uniform(0.0, 0.3)
-        center=rng.choice(centers)
-        f=center+rng.normal(0,0.2)
+
+        # 选择一个聚集中心
+        center = rng.choice(centers)
+        f = center + rng.normal(0, 0.2)
+
         sim.add(
             m=0,
             a=a,
             e=e,
             inc=inc,
+            Omega=rng.uniform(0, 2*np.pi),
+            omega=rng.uniform(0, 2*np.pi),
             f=f,
             primary=jupiter
         )
 
-def add_trojans(sim, N=5000, jupiter=None, rng=None):
+def add_trojans(sim, N=5000, jupiter=None, jupiter_a=5.2, rng=None):
+    """
+    添加木星特洛伊小行星
+
+    Parameters:
+    -----------
+    sim : rebound.Simulation
+        REBOUND 模拟对象
+    N : int
+        小行星数量（每个拉格朗日点 N/2）
+    jupiter : rebound.Particle
+        木星粒子对象
+    jupiter_a : float
+        木星半长轴（AU），默认 5.2
+    rng : numpy.random.Generator
+        随机数生成器
+    """
     if rng is None:
         rng = np.random.default_rng()
 
     for _ in range(N):
-        a = rng.normal(jupiter.a, 0.02)
+        # 木星轨道附近
+        a = rng.normal(jupiter_a, 0.02)
         e = rng.uniform(0.0, 0.15)
         inc = rng.uniform(0.0, 0.35)
 
-        # L4 / L5
+        # L4 (+60°) 或 L5 (-60°)
         offset = rng.choice([np.pi/3, -np.pi/3])
-        f = jupiter.f + offset + rng.normal(0, 0.2)
+        # 使用 M（平近点角）或 f（真近点角）表示位置
+        f = offset + rng.normal(0, 0.2)
 
         sim.add(
             m=0,
             a=a,
             e=e,
             inc=inc,
+            Omega=rng.uniform(0, 2*np.pi),
+            omega=rng.uniform(0, 2*np.pi),
             f=f,
             primary=jupiter
         )
